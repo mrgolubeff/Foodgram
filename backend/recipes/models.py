@@ -45,14 +45,17 @@ class Recipe(models.Model):
 class Tag(models.Model):
     name = models.CharField(
         max_length=40,
+        unique=True,
         verbose_name='Название тега'
     )
     color = models.CharField(
         max_length=7,
+        unique=True,
         verbose_name='Цвет тега (HEX-код)'
     )
     slug = models.SlugField(
         max_length=40,
+        unique=True,
         verbose_name='Жетон тега'
     )
 
