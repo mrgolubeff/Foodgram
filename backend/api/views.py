@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from .paginators import PaginationWithLimit
 
 from recipes.models import Tag, Ingredient, Recipe
 from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
@@ -23,4 +24,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = ()
-    pagination_class = LimitOffsetPagination
+    pagination_class = PaginationWithLimit
