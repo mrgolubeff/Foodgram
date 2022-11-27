@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from .paginators import PaginationWithLimit
+from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 
 from recipes.models import Tag, Ingredient, Recipe
 from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
@@ -25,4 +26,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    permission_classes = ()
+    permission_classes = (IsAuthorOrAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return x
+        else:
+            return y
