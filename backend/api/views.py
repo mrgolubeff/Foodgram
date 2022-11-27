@@ -5,7 +5,12 @@ from .paginators import PaginationWithLimit
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 
 from recipes.models import Tag, Ingredient, Recipe
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer
+from .serializers import (
+    TagSerializer,
+    IngredientSerializer,
+    RecipeListSerializer,
+    RecipeCreateUpdateSerializer
+)
 from .filters import IngredientSearchFilter
 
 
@@ -25,11 +30,10 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return x
+            return RecipeListSerializer
         else:
-            return y
+            return RecipeCreateUpdateSerializer
