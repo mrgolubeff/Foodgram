@@ -4,14 +4,17 @@ from rest_framework.pagination import LimitOffsetPagination
 from .paginators import PaginationWithLimit
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 
-from recipes.models import Tag, Ingredient, Recipe
+from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingCart
 from users.models import Follow
 from .serializers import (
     TagSerializer,
     IngredientSerializer,
     RecipeListSerializer,
     RecipeCreateUpdateSerializer,
-    SubscribeListSerializer
+    SubscribeListSerializer,
+    FavoriteSerializer,
+    ShoppingCartSerializer,
+    SubscribeCreateDestroySerializer
 )
 from .filters import IngredientSearchFilter
 from django.contrib.auth import get_user_model
@@ -81,7 +84,7 @@ class SubscribeCreateDestroyView(views.APIView):
 
     def delete(self, request, id):
         """Метод удаления подписки."""
-        return delete_object(User, Subscription, request, id)
+        return delete_object(User, Follow, request, id)
 
 
 class FavoriteView(views.APIView):
