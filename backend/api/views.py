@@ -37,3 +37,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeListSerializer
         else:
             return RecipeCreateUpdateSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
