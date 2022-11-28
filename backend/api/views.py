@@ -3,8 +3,10 @@ from rest_framework import viewsets, generics, views
 from rest_framework.pagination import LimitOffsetPagination
 from .paginators import PaginationWithLimit
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
 
-from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingCart
+from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingCart, RecipeIngredient
 from users.models import Follow
 from .serializers import (
     TagSerializer,
@@ -16,8 +18,11 @@ from .serializers import (
     ShoppingCartSerializer,
     SubscribeCreateDestroySerializer
 )
+from django.db.models import Sum
+from django.http import HttpResponse
 from .filters import IngredientSearchFilter
 from django.contrib.auth import get_user_model
+from .utils import post_object, delete_object
 
 User = get_user_model()
 
@@ -54,16 +59,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class SubscribeListView(generics.ListAPIView):
-    
-    def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
-
-
-class SubscribeListView(generics.ListAPIView):
-    """Представление вывода подписок."""
 
     def get(self, request):
-        """Метод получения списка подписок."""
         user = request.user
         queryset = User.objects.filter(follower__user=user)
         page = self.paginate_queryset(queryset)
@@ -76,36 +73,48 @@ class SubscribeListView(generics.ListAPIView):
 
 
 class SubscribeCreateDestroyView(views.APIView):
-    """Представление создания подписок."""
 
     def post(self, request, id):
-        """Метод создания подписки."""
         return post_object(SubscribeCreateDestroySerializer, request, id)
 
     def delete(self, request, id):
-        """Метод удаления подписки."""
         return delete_object(User, Follow, request, id)
 
 
 class FavoriteView(views.APIView):
-    """Представление избранного."""
 
     def post(self, request, id):
-        """Метод добавления рецепта в список избранного."""
         return post_object(FavoriteSerializer, request, id)
 
     def delete(self, request, id):
-        """Метод удаления рецепта из списка избранного."""
         return delete_object(Recipe, Favorite, request, id)
 
 
 class ShoppingCartView(views.APIView):
-    """Представление списка покупок."""
 
     def post(self, request, id):
-        """Метод добавления рецепта в список покупок."""
         return post_object(ShoppingCartSerializer, request, id)
 
     def delete(self, request, id):
-        """Метод удаления рецепта из списка покупок."""
         return delete_object(Recipe, ShoppingCart, request, id)
+
+
+class ShoppingCartDownloadView(views.APIView):
+
+    @permission_classes([IsAuthenticated])
+    def get(self, request):
+        ingredients = RecipeIngredient.objects.filter(
+            recipe__shopping_cart__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(sum=Sum('amount'))
+        shopping_list = "Купить в магазине:"
+        for ingredient in ingredients:
+            shopping_list += (
+                f"\n{ingredient['ingredient__name']} "
+                f"({ingredient['ingredient__measurement_unit']}) - "
+                f"{ingredient['sum']}")
+        file = 'shopping_list.txt'
+        response = HttpResponse(shopping_list, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{file}.txt"'
+        return response

@@ -7,7 +7,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient, RecipeTag)
 from users.models import Follow
 from recipes.models import Favorite, ShoppingCart
-from .utils import Base64ImageField
+from .fields import Base64ImageField
 
 User = get_user_model()
 
@@ -210,7 +210,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     def to_representation(self, recipe):
         return RecipeListSerializer(recipe, context=self.context).data
 
-########### !!!
 
 class SubscribeListSerializer(serializers.ModelSerializer):
 
