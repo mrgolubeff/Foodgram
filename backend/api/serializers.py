@@ -2,6 +2,7 @@ from rest_framework import serializers
 from djoser.serializers import UserSerializer, UserCreateSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient, RecipeTag)
 from users.models import Follow
@@ -125,7 +126,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         ).exists()
 
 
-class RecipeFavoriteSerializer(serializers.ModelSerializer):
+class RecipeMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
 
@@ -208,3 +209,112 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, recipe):
         return RecipeListSerializer(recipe, context=self.context).data
+
+########### !!!
+
+class SubscribeListSerializer(serializers.ModelSerializer):
+
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+
+        model = User
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
+
+    def get_is_subscribed(self, obj):
+        request = self.context['request']
+        if Follow.objects.filter(user=request.user, author=obj).exists():
+            return True
+        return False
+
+    def get_recipes(self, obj):
+        request = self.context['request']
+        if request.user.is_anonymous:
+            return False
+        recipes = Recipe.objects.filter(author=obj)
+        limit = request.query_params['recipes_limit']
+        if limit:
+            recipes = recipes[:int(limit)]
+        return RecipeListSerializer(
+            recipes, many=True, context=self.context).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
+
+
+class SubscribeCreateDestroySerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Follow
+        fields = (
+            'user',
+            'author'
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=['user', 'author'],
+                message='Подписка уже существует!'
+            )
+        ]
+
+    def validate_author(self, value):
+        request = self.context['request']
+        if value == request.user:
+            raise serializers.ValidationError(
+                'Попытка подписки на самого себя'
+            )
+        return value
+
+    def to_representation(self, instance):
+        return SubscribeListSerializer(
+                instance.author,
+                context=self.context
+            ).data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Favorite
+        fields = ['user', 'recipe']
+
+    def to_representation(self, instance):
+        return RecipeMiniSerializer(
+                instance.recipe,
+                context=self.context
+            ).data
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = ShoppingCart
+        fields = ['user', 'recipe']
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=['user', 'recipe'],
+                message='Рецепт уже добавлен в список покупок'
+            )
+        ]
+
+    def to_representation(self, instance):
+        return RecipeMiniSerializer(
+                instance.recipe,
+                context=self.context
+            ).data
