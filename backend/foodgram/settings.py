@@ -1,8 +1,7 @@
 import os
+from datetime import timedelta
 
 import environ
-
-from datetime import timedelta
 
 env = environ.Env()
 environ.Env.read_env()
@@ -128,6 +127,7 @@ DJOSER = {
     'SERIALIZERS': {
         'user': 'api.serializers.CustomUserSerializer',
         'user_create': 'api.serializers.CustomUserCreateSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],

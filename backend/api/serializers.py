@@ -1,12 +1,13 @@
-from rest_framework import serializers
-from djoser.serializers import UserSerializer, UserCreateSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient, RecipeTag)
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            RecipeTag, ShoppingCart, Tag)
 from users.models import Follow
-from recipes.models import Favorite, ShoppingCart
+
 from .fields import Base64ImageField
 
 User = get_user_model()
@@ -26,7 +27,7 @@ class CustomUserSerializer(UserSerializer):
             'email',
             'is_subscribed'
         )
-    
+
     def get_is_subscribed(self, obj):
         user = None
         request = self.context.get("request")
@@ -116,7 +117,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         return Favorite.objects.filter(
             user=request.user, recipe=obj
         ).exists()
-    
+
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
         if request.user.is_anonymous:

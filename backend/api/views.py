@@ -1,43 +1,36 @@
-from django.shortcuts import render
-from rest_framework import viewsets, generics, views
-from rest_framework.pagination import LimitOffsetPagination
-from .paginators import PaginationWithLimit
-from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
-from rest_framework.decorators import permission_classes
-from rest_framework.permissions import IsAuthenticated
-from django_filters import rest_framework as filters
-
-from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingCart, RecipeIngredient
-from users.models import Follow
-from .serializers import (
-    TagSerializer,
-    IngredientSerializer,
-    RecipeListSerializer,
-    RecipeCreateUpdateSerializer,
-    SubscribeListSerializer,
-    FavoriteSerializer,
-    ShoppingCartSerializer,
-    SubscribeCreateDestroySerializer
-)
+from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
-from .filters import IngredientSearchFilter
-from django.contrib.auth import get_user_model
-from .utils import post_object, delete_object
-from .filters import FilterRecipe
+from django_filters import rest_framework as filters
+from rest_framework import generics, views, viewsets
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
+from users.models import Follow
+
+from .filters import FilterRecipe, IngredientSearchFilter
+from .permissions import IsAuthorOrAdminOrReadOnly
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeCreateUpdateSerializer, RecipeListSerializer,
+                          ShoppingCartSerializer,
+                          SubscribeCreateDestroySerializer,
+                          SubscribeListSerializer, TagSerializer)
+from .utils import delete_object, post_object
 
 User = get_user_model()
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    
+
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (IngredientSearchFilter,)
@@ -46,7 +39,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    
+
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
     filter_backends = (filters.DjangoFilterBackend,)
@@ -113,7 +106,7 @@ class ShoppingCartDownloadView(views.APIView):
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
         ).annotate(sum=Sum('amount'))
-        shopping_list = "Купить в магазине:"
+        shopping_list = "Список покупок:"
         for ingredient in ingredients:
             shopping_list += (
                 f"\n{ingredient['ingredient__name']} "
