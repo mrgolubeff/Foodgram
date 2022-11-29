@@ -5,6 +5,7 @@ from .paginators import PaginationWithLimit
 from .permissions import IsAdminOrReadOnly, IsAuthorOrAdminOrReadOnly
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django_filters import rest_framework as filters
 
 from recipes.models import Tag, Ingredient, Recipe, Favorite, ShoppingCart, RecipeIngredient
 from users.models import Follow
@@ -23,6 +24,7 @@ from django.http import HttpResponse
 from .filters import IngredientSearchFilter
 from django.contrib.auth import get_user_model
 from .utils import post_object, delete_object
+from .filters import FilterRecipe
 
 User = get_user_model()
 
@@ -47,6 +49,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrAdminOrReadOnly,)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = FilterRecipe
+    permission_classes = (IsAuthorOrAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -62,7 +67,7 @@ class SubscribeListView(generics.ListAPIView):
 
     def get(self, request):
         user = request.user
-        queryset = User.objects.filter(follower__user=user)
+        queryset = User.objects.filter(following__user=user)
         page = self.paginate_queryset(queryset)
         serializer = SubscribeListSerializer(
             page,

@@ -242,7 +242,7 @@ class SubscribeListSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         recipes = Recipe.objects.filter(author=obj)
-        limit = request.query_params['recipes_limit']
+        limit = request.query_params.get('recipes_limit')
         if limit:
             recipes = recipes[:int(limit)]
         return RecipeListSerializer(
