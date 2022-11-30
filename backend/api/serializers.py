@@ -170,15 +170,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
-        for ingredient in ingredients:
-            current_ingredient = Ingredient.objects.get(id=ingredient['id'])
-            RecipeIngredient.objects.create(
-                ingredient=current_ingredient,
-                recipe=recipe,
-                amount=ingredient['amount']
-            )
-        for tag in tags:
-            RecipeTag.objects.create(recipe=recipe, tag=tag)
+        self.add_ingredients_tags(recipe, ingredients, tags)
         return recipe
 
     def update(self, instance, validated_data):
@@ -187,20 +179,29 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         super().update(instance, validated_data)
-        for ingredient in ingredients:
-            current_ingredient = Ingredient.objects.get(id=ingredient['id'])
-            RecipeIngredient.objects.create(
-                ingredient=current_ingredient,
-                recipe=instance,
-                amount=ingredient['amount']
-            )
-        for tag in tags:
-            RecipeTag.objects.create(recipe=instance, tag=tag)
+        self.add_ingredients_tags(instance, ingredients, tags)
         instance.save()
         return instance
 
     def add_ingredients_tags(self, recipe, ingredients, tags):
-        pass
+        ingredients_to_db = []
+        for ingredient in ingredients:
+            ingredients_to_db.append(
+                RecipeIngredient(
+                    ingredient_id=ingredient['id'],
+                    recipe=recipe,
+                    amount=ingredient['amount']
+                )
+            )
+        RecipeIngredient.objects.bulk_create(ingredients_to_db)
+        tags_to_db = []
+        for tag in tags:
+            tags_to_db.append(
+                RecipeTag(
+                    recipe=recipe, tag=tag
+                )
+            )
+        RecipeTag.objects.bulk_create(tags_to_db)
 
     def validate_ingredients(self, value):
         ingredients_list = []
