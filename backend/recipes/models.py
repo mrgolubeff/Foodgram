@@ -88,14 +88,34 @@ class Ingredient(models.Model):
 
 
 class RecipeTag(models.Model):
+
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
+    class Meta:
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'tag'],
+                name='unique_tag_for_recipe'
+            )
+        ]
+
 
 class RecipeIngredient(models.Model):
+
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     amount = models.FloatField(validators=[MinValueValidator(0.1)])
+
+    class Meta:
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_ingredient_for_recipe'
+            )
+        ]
 
 
 class Favorite(models.Model):

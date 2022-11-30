@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from recipes.admin import EMPTY
-
 from .models import Follow, User
 
 

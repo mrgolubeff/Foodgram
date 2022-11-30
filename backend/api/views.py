@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Tag)
 from users.models import Follow
-
 from .filters import FilterRecipe, IngredientSearchFilter
 from .permissions import IsAuthorOrAdminOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
