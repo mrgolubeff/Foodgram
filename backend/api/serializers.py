@@ -202,6 +202,17 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+    def validate_ingredients(self, value):
+        ingredients_list = []
+        for ingredient in value:
+            id = ingredient.get('id')
+            if id in ingredients_list:
+                raise serializers.ValidationError(
+                    'Попытка добавления повторяющегося ингредиента'
+                )
+            ingredients_list.append(id)
+        return value
+
     def to_representation(self, recipe):
         return RecipeListSerializer(recipe, context=self.context).data
 
