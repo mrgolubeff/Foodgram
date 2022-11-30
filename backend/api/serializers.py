@@ -228,9 +228,7 @@ class SubscribeListSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context['request']
-        if Follow.objects.filter(user=request.user, author=obj).exists():
-            return True
-        return False
+        return Follow.objects.filter(user=request.user, author=obj).exists()
 
     def get_recipes(self, obj):
         request = self.context['request']
