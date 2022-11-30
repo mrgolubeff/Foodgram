@@ -32,7 +32,7 @@ class CustomUserSerializer(UserSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             user = request.user
-        if isinstance(user, AnonymousUser) or not user:
+        if not user.is_authenticated:
             return False
         subscription_exists = Follow.objects.filter(
             user=user,
