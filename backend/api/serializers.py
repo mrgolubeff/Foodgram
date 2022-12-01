@@ -180,7 +180,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         super().update(instance, validated_data)
         self.add_ingredients_tags(instance, ingredients, tags)
-        instance.save()
         return instance
 
     def add_ingredients_tags(self, recipe, ingredients, tags):
@@ -206,12 +205,12 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, value):
         ingredients_list = []
         for ingredient in value:
-            id = ingredient.get('id')
-            if id in ingredients_list:
+            ingredient_id = ingredient.get('id')
+            if ingredient_id in ingredients_list:
                 raise serializers.ValidationError(
                     'Попытка добавления повторяющегося ингредиента'
                 )
-            ingredients_list.append(id)
+            ingredients_list.append(ingredient_id)
         return value
 
     def to_representation(self, recipe):
