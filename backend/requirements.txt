@@ -1,5 +1,4 @@
 asgiref==3.5.2
-autopep8==2.0.0
 certifi==2022.9.24
 cffi==1.15.1
 charset-normalizer==2.1.1
@@ -14,7 +13,6 @@ django-templated-mail==1.1.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
-flake8==6.0.0
 idna==3.4
 isort==5.10.1
 itypes==1.2.0
@@ -38,3 +36,5 @@ sqlparse==0.4.3
 tomli==2.0.1
 uritemplate==4.1.1
 urllib3==1.26.12
+psycopg2-binary==2.8.6
+gunicorn==20.0.4
