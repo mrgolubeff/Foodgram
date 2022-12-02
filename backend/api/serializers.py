@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -84,7 +83,10 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 class RecipeListSerializer(serializers.ModelSerializer):
 
     tags = TagSerializer(read_only=True, many=True)
-    ingredients = RecipeIngredientSerializer(many=True, source='recipeingredient_set')
+    ingredients = RecipeIngredientSerializer(
+        many=True,
+        source='recipeingredient_set'
+    )
     author = CustomUserSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField(read_only=True)
     is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
